@@ -1,0 +1,31 @@
+# kWLK Configuration File
+
+# Kick message in MiniMessage format
+# See https://docs.advntr.dev/minimessage/format.html for formatting options
+kick-message: "<red><bold>You have been kicked from the server!</bold></red>\n<gray>Reason: Whitelist purge</gray>"
+
+# Confirmation message shown to the command executor
+confirmation-message: "<yellow>Are you sure you want to kick all players without permission? Type <green>/kwlk confirm</green> to proceed or <red>/kwlk cancel</red> to cancel.</yellow>"
+
+# Message shown after successful kick
+success-message: "<green>Successfully kicked <count> player(s) without permission.</green>"
+
+# Message shown when confirmation is cancelled
+cancel-message: "<red>Kick operation cancelled.</red>"
+
+# Message shown when confirmation expires
+expired-message: "<red>Confirmation expired. Please run the command again.</red>"
+
+# Time in seconds before confirmation expires
+confirmation-timeout: 30
+
+# Ghost mode settings
+ghost-mode:
+  # Enable ghost mode on player death
+  enabled: true
+  
+  # Message shown to player when they become a ghost
+  ghost-message: "<gray><italic>You have died and become a ghost. You cannot interact with the world.</italic></gray>"
+  
+  # Message shown to player when they respawn
+  respawn-message: "<green>You have respawned and are no longer a ghost.</green>"
