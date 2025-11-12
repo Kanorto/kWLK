@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Command handler for /kwlk
@@ -27,7 +28,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
     public KWLKCommand(KWLKPlugin plugin) {
         this.plugin = plugin;
         this.miniMessage = MiniMessage.miniMessage();
-        this.pendingConfirmations = new HashMap<>();
+        this.pendingConfirmations = new ConcurrentHashMap<>();
     }
     
     @Override
@@ -98,55 +99,51 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             // Remove pending confirmation
             pendingConfirmations.remove(playerId);
             
-            // Kick all players without permission (async preparation, sync execution)
+            // Kick all players without permission (sync permission checks, async processing)
             player.sendMessage(Component.text("§eОбработка запроса на кик..."));
             plugin.getLogger().info("[KICK] Игрок " + player.getName() + " подтвердил команду кика");
             
-            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-                // Prepare list of players to kick (async)
-                Collection<? extends Player> onlinePlayers = plugin.getServer().getOnlinePlayers();
-                List<Player> playersToKick = new ArrayList<>();
-                List<Player> playersToWhitelist = new ArrayList<>();
-                
-                plugin.getLogger().info("[KICK] Проверка прав для " + onlinePlayers.size() + " игроков...");
-                
-                for (Player p : onlinePlayers) {
-                    // IMPORTANT: Check bypass permission before kicking
-                    if (!p.hasPermission("kwlk.bypass")) {
-                        playersToKick.add(p);
-                        plugin.getLogger().info("[KICK] Игрок " + p.getName() + " будет кикнут (нет права kwlk.bypass)");
-                    } else {
-                        playersToWhitelist.add(p);
-                        plugin.getLogger().info("[KICK] Игрок " + p.getName() + " защищен (есть право kwlk.bypass)");
-                    }
+            // Do all checks on main thread for thread safety
+            Collection<? extends Player> onlinePlayers = plugin.getServer().getOnlinePlayers();
+            List<Player> playersToKick = new ArrayList<>();
+            List<Player> playersToWhitelist = new ArrayList<>();
+            
+            plugin.getLogger().info("[KICK] Проверка прав для " + onlinePlayers.size() + " игроков...");
+            
+            for (Player p : onlinePlayers) {
+                // IMPORTANT: Check bypass permission before kicking (on main thread for thread safety)
+                if (!p.hasPermission("kwlk.bypass")) {
+                    playersToKick.add(p);
+                    plugin.getLogger().info("[KICK] Игрок " + p.getName() + " будет кикнут (нет права kwlk.bypass)");
+                } else {
+                    playersToWhitelist.add(p);
+                    plugin.getLogger().info("[KICK] Игрок " + p.getName() + " защищен (есть право kwlk.bypass)");
                 }
-                
-                // Execute kicks on main thread
-                plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    String kickMessageConfig = plugin.getConfig().getString("kick-message",
-                        "<red><bold>Вы были кикнуты с сервера!</bold></red>\n<gray>Причина: Чистка вайтлиста</gray>");
-                    Component kickMessage = miniMessage.deserialize(kickMessageConfig);
-                    
-                    // Add to whitelist
-                    for (Player p : playersToWhitelist) {
-                        addToWhitelist(p);
-                    }
-                    
-                    // Kick players
-                    for (Player p : playersToKick) {
-                        p.kick(kickMessage);
-                        plugin.getLogger().info("[KICK] Игрок " + p.getName() + " был кикнут");
-                    }
-                    
-                    plugin.getLogger().info("[KICK] Завершено. Кикнуто: " + playersToKick.size() + ", В вайтлисте: " + playersToWhitelist.size());
-                    
-                    // Send success message
-                    String successMsg = plugin.getConfig().getString("success-message",
-                        "<green>Успешно кикнуто <count> игрок(ов) без прав.</green>");
-                    successMsg = successMsg.replace("<count>", String.valueOf(playersToKick.size()));
-                    sender.sendMessage(miniMessage.deserialize(successMsg));
-                });
-            });
+            }
+            
+            // Execute kicks (still on main thread as required by Bukkit API)
+            String kickMessageConfig = plugin.getConfig().getString("kick-message",
+                "<red><bold>Вы были кикнуты с сервера!</bold></red>\n<gray>Причина: Чистка вайтлиста</gray>");
+            Component kickMessage = miniMessage.deserialize(kickMessageConfig);
+            
+            // Add to whitelist
+            for (Player p : playersToWhitelist) {
+                addToWhitelist(p);
+            }
+            
+            // Kick players
+            for (Player p : playersToKick) {
+                p.kick(kickMessage);
+                plugin.getLogger().info("[KICK] Игрок " + p.getName() + " был кикнут");
+            }
+            
+            plugin.getLogger().info("[KICK] Завершено. Кикнуто: " + playersToKick.size() + ", В вайтлисте: " + playersToWhitelist.size());
+            
+            // Send success message
+            String successMsg = plugin.getConfig().getString("success-message",
+                "<green>Успешно кикнуто <count> игрок(ов) без прав.</green>");
+            successMsg = successMsg.replace("<count>", String.valueOf(playersToKick.size()));
+            sender.sendMessage(miniMessage.deserialize(successMsg));
             
             return true;
         } else if (subCommand.equals("cancel")) {

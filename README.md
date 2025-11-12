@@ -1,6 +1,6 @@
 # kWLK - Whitelist Kick Plugin
 
-A Minecraft 1.21.4 plugin that manages player whitelist and implements ghost mode for dead players.
+A Minecraft 1.21.3+ plugin that manages player whitelist and implements ghost mode for dead players.
 
 ## Features
 
@@ -62,9 +62,6 @@ respawn-item:
   success-message: "<green>You have revived <player>!</green>"
   revived-message: "<green>You have been revived by <reviver>!</green>"
   no-ghosts-message: "<red>No ghosts found within <radius> blocks!</red>"
-  enabled: true
-  ghost-message: "<gray><italic>You have died and become a ghost. You cannot interact with the world.</italic></gray>"
-  respawn-message: "<green>You have respawned and are no longer a ghost.</green>"
 ```
 
 ## Permissions
@@ -72,6 +69,7 @@ respawn-item:
 - `kwlk.use` - Allows using the `/kwlk` command (default: op)
 - `kwlk.bypass` - Exempts from being kicked and auto-adds to whitelist (default: op)
 - `kwlk.giverespawn` - Allows giving respawn items to players (default: op)
+- `kwlk.setrespawn` - Allows setting item in hand as respawn item (default: op)
 
 ## Commands
 
@@ -79,6 +77,7 @@ respawn-item:
 - `/kwlk confirm` - Confirms the kick action
 - `/kwlk cancel` - Cancels the kick action
 - `/giverespawn <player> [amount]` - Give respawn items to a player
+- `/setrespawn` - Set the item in your hand as a respawn item
 
 ## Performance
 

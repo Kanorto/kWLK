@@ -26,7 +26,7 @@ public class PlayerDeathListener implements Listener {
         this.miniMessage = MiniMessage.miniMessage();
     }
     
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getPlayer();
         
@@ -49,21 +49,32 @@ public class PlayerDeathListener implements Listener {
             }
         } else {
             plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " умер первый раз");
-            // First death - make player a ghost
+            // First death - make player a ghost (permission only, effects applied on respawn)
             ghostManager.makeGhost(player);
         }
     }
     
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         
-        plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " возрождается");
+        // Check if ghost mode is enabled and player is a ghost
+        if (!plugin.getConfig().getBoolean("ghost-mode.enabled", true)) {
+            return;
+        }
         
-        // Remove ghost status when player respawns
-        // Delay by 1 tick to ensure player is fully respawned
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            ghostManager.removeGhost(player);
-        }, 1L);
+        if (ghostManager.isGhost(player.getUniqueId())) {
+            plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " возрождается как призрак");
+            
+            // Apply ghost effects after player is fully respawned
+            // Delay by 2 ticks to ensure player is fully respawned
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                if (ghostManager.isGhost(player.getUniqueId())) {
+                    ghostManager.applyGhostEffects(player);
+                }
+            }, 2L);
+        } else {
+            plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " возрождается (не призрак)");
+        }
     }
 }

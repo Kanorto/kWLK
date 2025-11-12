@@ -21,7 +21,7 @@ commands:
     
 permissions:
   kwlk.use:
-    description: Allows use of the kick command and exempts from being kicked
+    description: Allows use of the kick command
     default: op
   kwlk.bypass:
     description: Exempts player from being kicked and auto-adds to whitelist
@@ -33,5 +33,5 @@ permissions:
     description: Allows setting item in hand as respawn item
     default: op
   kwlk.ghost:
-    description: Automatically assigned to ghosts
+    description: Temporarily assigned to ghosts while in ghost mode
     default: false

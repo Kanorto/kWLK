@@ -5,10 +5,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,11 +22,13 @@ public class GhostManager {
     
     private final KWLKPlugin plugin;
     private final Set<UUID> ghostPlayers;
+    private final Map<UUID, PermissionAttachment> ghostPermissions;
     private final MiniMessage miniMessage;
     
     public GhostManager(KWLKPlugin plugin) {
         this.plugin = plugin;
         this.ghostPlayers = new HashSet<>();
+        this.ghostPermissions = new HashMap<>();
         this.miniMessage = MiniMessage.miniMessage();
     }
     
@@ -52,10 +57,10 @@ public class GhostManager {
         UUID playerId = player.getUniqueId();
         if (!ghostPlayers.contains(playerId)) {
             ghostPlayers.add(playerId);
-            applyGhostEffects(player);
             
-            // Give ghost permission
-            player.addAttachment(plugin, "kwlk.ghost", true);
+            // Give ghost permission and store attachment
+            PermissionAttachment attachment = player.addAttachment(plugin, "kwlk.ghost", true);
+            ghostPermissions.put(playerId, attachment);
             
             // Send ghost message
             String ghostMessage = plugin.getConfig().getString("ghost-mode.ghost-message", 
@@ -69,31 +74,9 @@ public class GhostManager {
     }
     
     /**
-     * Removes ghost status from a player
+     * Applies ghost effects to a player (should be called after respawn)
      */
-    public void removeGhost(Player player) {
-        UUID playerId = player.getUniqueId();
-        if (ghostPlayers.remove(playerId)) {
-            removeGhostEffects(player);
-            
-            // Remove ghost permission by reloading permissions
-            player.recalculatePermissions();
-            
-            // Send respawn message
-            String respawnMessage = plugin.getConfig().getString("ghost-mode.respawn-message", 
-                "<green>Вы возродились и больше не призрак.</green>");
-            Component message = miniMessage.deserialize(respawnMessage);
-            player.sendMessage(message);
-            
-            // Log to console
-            plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " (" + playerId + ") больше не призрак");
-        }
-    }
-    
-    /**
-     * Applies ghost effects to a player
-     */
-    private void applyGhostEffects(Player player) {
+    public void applyGhostEffects(Player player) {
         // Make player invisible
         player.addPotionEffect(new PotionEffect(
             PotionEffectType.INVISIBILITY,
@@ -114,6 +97,31 @@ public class GhostManager {
         
         // Set to adventure mode to prevent block breaking/placing
         player.setGameMode(GameMode.ADVENTURE);
+    }
+    
+    /**
+     * Removes ghost status from a player
+     */
+    public void removeGhost(Player player) {
+        UUID playerId = player.getUniqueId();
+        if (ghostPlayers.remove(playerId)) {
+            removeGhostEffects(player);
+            
+            // Remove ghost permission attachment explicitly
+            PermissionAttachment attachment = ghostPermissions.remove(playerId);
+            if (attachment != null) {
+                attachment.remove();
+            }
+            
+            // Send respawn message
+            String respawnMessage = plugin.getConfig().getString("ghost-mode.respawn-message", 
+                "<green>Вы возродились и больше не призрак.</green>");
+            Component message = miniMessage.deserialize(respawnMessage);
+            player.sendMessage(message);
+            
+            // Log to console
+            plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " (" + playerId + ") больше не призрак");
+        }
     }
     
     /**
@@ -140,5 +148,6 @@ public class GhostManager {
             }
         }
         ghostPlayers.clear();
+        ghostPermissions.clear();
     }
 }

@@ -45,6 +45,12 @@ public class RespawnItemListener implements Listener {
         }
         
         Player player = event.getPlayer();
+        
+        // Prevent ghosts from using respawn items
+        if (ghostManager.isGhost(player.getUniqueId())) {
+            return;
+        }
+        
         ItemStack item = event.getItem();
         
         // Check if player is holding an item
