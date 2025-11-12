@@ -35,6 +35,13 @@ public class GhostManager {
     }
     
     /**
+     * Gets all ghost player UUIDs
+     */
+    public Set<UUID> getGhostPlayers() {
+        return new HashSet<>(ghostPlayers);
+    }
+    
+    /**
      * Makes a player a ghost
      */
     public void makeGhost(Player player) {

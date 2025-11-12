@@ -29,3 +29,39 @@ ghost-mode:
   
   # Message shown to player when they respawn
   respawn-message: "<green>You have respawned and are no longer a ghost.</green>"
+  
+  # Kick ghosts on second death
+  kick-on-second-death: true
+  
+  # Message shown when a ghost is kicked for dying again
+  ghost-kick-message: "<red><bold>You died as a ghost!</bold></red>\n<gray>Ghosts cannot die twice.</gray>"
+
+# Respawn item settings
+respawn-item:
+  # Enable respawn item feature
+  enabled: true
+  
+  # Item type to use as respawn item (Minecraft material name)
+  material: "TOTEM_OF_UNDYING"
+  
+  # Custom display name for the respawn item (MiniMessage format)
+  display-name: "<gold><bold>Totem of Revival</bold></gold>"
+  
+  # Lore for the respawn item (MiniMessage format)
+  lore:
+    - "<gray>Right-click to revive a random ghost"
+    - "<gray>within 5 blocks of you."
+    - ""
+    - "<red>Item will break on use!</red>"
+  
+  # Radius in blocks to search for ghosts
+  search-radius: 5
+  
+  # Message shown when using the item successfully
+  success-message: "<green>You have revived <player>!</green>"
+  
+  # Message shown to the revived player
+  revived-message: "<green>You have been revived by <reviver>!</green>"
+  
+  # Message shown when no ghosts are nearby
+  no-ghosts-message: "<red>No ghosts found within <radius> blocks!</red>"

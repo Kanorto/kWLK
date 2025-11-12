@@ -10,6 +10,10 @@ commands:
     description: Kick all players without permission
     usage: /kwlk
     permission: kwlk.use
+  giverespawn:
+    description: Give a respawn item to a player
+    usage: /giverespawn <player> [amount]
+    permission: kwlk.giverespawn
     
 permissions:
   kwlk.use:
@@ -17,4 +21,7 @@ permissions:
     default: op
   kwlk.bypass:
     description: Exempts player from being kicked and auto-adds to whitelist
+    default: op
+  kwlk.giverespawn:
+    description: Allows giving respawn items to players
     default: op

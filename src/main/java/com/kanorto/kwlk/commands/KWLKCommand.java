@@ -95,14 +95,45 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             // Remove pending confirmation
             pendingConfirmations.remove(playerId);
             
-            // Kick all players without permission
-            int kickedCount = kickPlayersWithoutPermission(sender);
-            
-            // Send success message
-            String successMsg = plugin.getConfig().getString("success-message",
-                "<green>Successfully kicked <count> player(s) without permission.</green>");
-            successMsg = successMsg.replace("<count>", String.valueOf(kickedCount));
-            sender.sendMessage(miniMessage.deserialize(successMsg));
+            // Kick all players without permission (async preparation, sync execution)
+            player.sendMessage(Component.text("§eProcessing kick request..."));
+            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                // Prepare list of players to kick (async)
+                Collection<? extends Player> onlinePlayers = plugin.getServer().getOnlinePlayers();
+                List<Player> playersToKick = new ArrayList<>();
+                List<Player> playersToWhitelist = new ArrayList<>();
+                
+                for (Player p : onlinePlayers) {
+                    if (!p.hasPermission("kwlk.bypass")) {
+                        playersToKick.add(p);
+                    } else {
+                        playersToWhitelist.add(p);
+                    }
+                }
+                
+                // Execute kicks on main thread
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    String kickMessageConfig = plugin.getConfig().getString("kick-message",
+                        "<red><bold>You have been kicked from the server!</bold></red>\n<gray>Reason: Whitelist purge</gray>");
+                    Component kickMessage = miniMessage.deserialize(kickMessageConfig);
+                    
+                    // Add to whitelist
+                    for (Player p : playersToWhitelist) {
+                        addToWhitelist(p);
+                    }
+                    
+                    // Kick players
+                    for (Player p : playersToKick) {
+                        p.kick(kickMessage);
+                    }
+                    
+                    // Send success message
+                    String successMsg = plugin.getConfig().getString("success-message",
+                        "<green>Successfully kicked <count> player(s) without permission.</green>");
+                    successMsg = successMsg.replace("<count>", String.valueOf(playersToKick.size()));
+                    sender.sendMessage(miniMessage.deserialize(successMsg));
+                });
+            });
             
             return true;
         } else if (subCommand.equals("cancel")) {
@@ -126,37 +157,6 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
         }
         
         return false;
-    }
-    
-    /**
-     * Kicks all players without the bypass permission
-     * @return Number of players kicked
-     */
-    private int kickPlayersWithoutPermission(CommandSender sender) {
-        int kickedCount = 0;
-        String kickMessageConfig = plugin.getConfig().getString("kick-message",
-            "<red><bold>You have been kicked from the server!</bold></red>\n<gray>Reason: Whitelist purge</gray>");
-        Component kickMessage = miniMessage.deserialize(kickMessageConfig);
-        
-        Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
-        List<Player> playersToKick = new ArrayList<>();
-        
-        for (Player player : onlinePlayers) {
-            if (!player.hasPermission("kwlk.bypass")) {
-                playersToKick.add(player);
-            } else {
-                // Add to whitelist if they have bypass permission
-                addToWhitelist(player);
-            }
-        }
-        
-        // Kick players
-        for (Player player : playersToKick) {
-            player.kick(kickMessage);
-            kickedCount++;
-        }
-        
-        return kickedCount;
     }
     
     /**

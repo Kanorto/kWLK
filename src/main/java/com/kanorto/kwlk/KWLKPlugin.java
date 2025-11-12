@@ -1,8 +1,10 @@
 package com.kanorto.kwlk;
 
+import com.kanorto.kwlk.commands.GiveRespawnCommand;
 import com.kanorto.kwlk.commands.KWLKCommand;
 import com.kanorto.kwlk.listeners.PlayerDeathListener;
 import com.kanorto.kwlk.listeners.PlayerInteractionListener;
+import com.kanorto.kwlk.listeners.RespawnItemListener;
 import com.kanorto.kwlk.managers.GhostManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,9 +29,14 @@ public class KWLKPlugin extends JavaPlugin {
         getCommand("kwlk").setExecutor(kwlkCommand);
         getCommand("kwlk").setTabCompleter(kwlkCommand);
         
+        GiveRespawnCommand giveRespawnCommand = new GiveRespawnCommand(this);
+        getCommand("giverespawn").setExecutor(giveRespawnCommand);
+        getCommand("giverespawn").setTabCompleter(giveRespawnCommand);
+        
         // Register listeners
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this, ghostManager), this);
         getServer().getPluginManager().registerEvents(new PlayerInteractionListener(ghostManager), this);
+        getServer().getPluginManager().registerEvents(new RespawnItemListener(this, ghostManager), this);
         
         getLogger().info("kWLK plugin has been enabled!");
     }
