@@ -1,0 +1,37 @@
+name: kWLK
+version: ${version}
+main: com.kanorto.kwlk.KWLKPlugin
+description: ${description}
+api-version: '1.21'
+author: Kanorto
+
+commands:
+  kwlk:
+    description: Kick all players without permission
+    usage: /kwlk
+    permission: kwlk.use
+  giverespawn:
+    description: Give a respawn item to a player
+    usage: /giverespawn <player> [amount]
+    permission: kwlk.giverespawn
+  setrespawn:
+    description: Set the item in your hand as a respawn item
+    usage: /setrespawn
+    permission: kwlk.setrespawn
+    
+permissions:
+  kwlk.use:
+    description: Allows use of the kick command
+    default: op
+  kwlk.bypass:
+    description: Exempts player from being kicked and auto-adds to whitelist
+    default: op
+  kwlk.giverespawn:
+    description: Allows giving respawn items to players
+    default: op
+  kwlk.setrespawn:
+    description: Allows setting item in hand as respawn item
+    default: op
+  kwlk.ghost:
+    description: Temporarily assigned to ghosts while in ghost mode
+    default: false
