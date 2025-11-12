@@ -54,11 +54,17 @@ public class GhostManager {
             ghostPlayers.add(playerId);
             applyGhostEffects(player);
             
+            // Give ghost permission
+            player.addAttachment(plugin, "kwlk.ghost", true);
+            
             // Send ghost message
             String ghostMessage = plugin.getConfig().getString("ghost-mode.ghost-message", 
-                "<gray><italic>You have died and become a ghost. You cannot interact with the world.</italic></gray>");
+                "<gray><italic>Вы умерли и стали призраком. Вы не можете взаимодействовать с миром.</italic></gray>");
             Component message = miniMessage.deserialize(ghostMessage);
             player.sendMessage(message);
+            
+            // Log to console
+            plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " (" + playerId + ") стал призраком");
         }
     }
     
@@ -70,11 +76,17 @@ public class GhostManager {
         if (ghostPlayers.remove(playerId)) {
             removeGhostEffects(player);
             
+            // Remove ghost permission by reloading permissions
+            player.recalculatePermissions();
+            
             // Send respawn message
             String respawnMessage = plugin.getConfig().getString("ghost-mode.respawn-message", 
-                "<green>You have respawned and are no longer a ghost.</green>");
+                "<green>Вы возродились и больше не призрак.</green>");
             Component message = miniMessage.deserialize(respawnMessage);
             player.sendMessage(message);
+            
+            // Log to console
+            plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " (" + playerId + ") больше не призрак");
         }
     }
     

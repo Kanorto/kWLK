@@ -38,26 +38,26 @@ public class GiveRespawnCommand implements CommandExecutor, TabCompleter {
         
         // Check permission
         if (!sender.hasPermission("kwlk.giverespawn")) {
-            sender.sendMessage(Component.text("You don't have permission to use this command."));
+            sender.sendMessage(Component.text("§cУ вас нет прав для использования этой команды."));
             return true;
         }
         
         // Check if respawn item feature is enabled
         if (!plugin.getConfig().getBoolean("respawn-item.enabled", true)) {
-            sender.sendMessage(Component.text("§cRespawn item feature is disabled in the config!"));
+            sender.sendMessage(Component.text("§cФункция предмета возрождения отключена в конфигурации!"));
             return true;
         }
         
         // Check arguments
         if (args.length < 1) {
-            sender.sendMessage(Component.text("§cUsage: /giverespawn <player> [amount]"));
+            sender.sendMessage(Component.text("§cИспользование: /giverespawn <игрок> [количество]"));
             return true;
         }
         
         // Get target player
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage(Component.text("§cPlayer not found: " + args[0]));
+            sender.sendMessage(Component.text("§cИгрок не найден: " + args[0]));
             return true;
         }
         
@@ -67,11 +67,11 @@ public class GiveRespawnCommand implements CommandExecutor, TabCompleter {
             try {
                 amount = Integer.parseInt(args[1]);
                 if (amount < 1 || amount > 64) {
-                    sender.sendMessage(Component.text("§cAmount must be between 1 and 64!"));
+                    sender.sendMessage(Component.text("§cКоличество должно быть от 1 до 64!"));
                     return true;
                 }
             } catch (NumberFormatException e) {
-                sender.sendMessage(Component.text("§cInvalid amount: " + args[1]));
+                sender.sendMessage(Component.text("§cНеверное количество: " + args[1]));
                 return true;
             }
         }
@@ -79,16 +79,19 @@ public class GiveRespawnCommand implements CommandExecutor, TabCompleter {
         // Create respawn item
         ItemStack respawnItem = createRespawnItem(amount);
         if (respawnItem == null) {
-            sender.sendMessage(Component.text("§cFailed to create respawn item. Check config!"));
+            sender.sendMessage(Component.text("§cНе удалось создать предмет возрождения. Проверьте конфигурацию!"));
             return true;
         }
         
         // Give item to player
         target.getInventory().addItem(respawnItem);
         
+        // Log to console
+        plugin.getLogger().info("[GIVERESPAWN] " + sender.getName() + " выдал " + amount + " предметов возрождения игроку " + target.getName());
+        
         // Send messages
-        sender.sendMessage(Component.text("§aGave " + amount + " respawn item(s) to " + target.getName()));
-        target.sendMessage(Component.text("§aYou received " + amount + " respawn item(s)!"));
+        sender.sendMessage(Component.text("§aВыдано " + amount + " предмет(ов) возрождения игроку " + target.getName()));
+        target.sendMessage(Component.text("§aВы получили " + amount + " предмет(ов) возрождения!"));
         
         return true;
     }

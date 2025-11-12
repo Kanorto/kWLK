@@ -32,11 +32,15 @@ public class PlayerDeathListener implements Listener {
         
         // Check if player is already a ghost (second death)
         if (ghostManager.isGhost(player.getUniqueId())) {
+            plugin.getLogger().info("[GHOST] Призрак " + player.getName() + " умер второй раз");
+            
             // Ghost died again - kick them if enabled
             if (plugin.getConfig().getBoolean("ghost-mode.kick-on-second-death", true)) {
                 String kickMessage = plugin.getConfig().getString("ghost-mode.ghost-kick-message",
-                    "<red><bold>You died as a ghost!</bold></red>\n<gray>Ghosts cannot die twice.</gray>");
+                    "<red><bold>Вы умерли будучи призраком!</bold></red>\n<gray>Призраки не могут умереть дважды.</gray>");
                 Component message = miniMessage.deserialize(kickMessage);
+                
+                plugin.getLogger().info("[GHOST] Кикаем призрака " + player.getName() + " за вторую смерть");
                 
                 // Schedule kick on next tick to avoid issues during death event
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
@@ -44,6 +48,7 @@ public class PlayerDeathListener implements Listener {
                 });
             }
         } else {
+            plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " умер первый раз");
             // First death - make player a ghost
             ghostManager.makeGhost(player);
         }
@@ -52,6 +57,8 @@ public class PlayerDeathListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
+        
+        plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " возрождается");
         
         // Remove ghost status when player respawns
         // Delay by 1 tick to ensure player is fully respawned

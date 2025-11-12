@@ -14,6 +14,10 @@ commands:
     description: Give a respawn item to a player
     usage: /giverespawn <player> [amount]
     permission: kwlk.giverespawn
+  setrespawn:
+    description: Set the item in your hand as a respawn item
+    usage: /setrespawn
+    permission: kwlk.setrespawn
     
 permissions:
   kwlk.use:
@@ -25,3 +29,9 @@ permissions:
   kwlk.giverespawn:
     description: Allows giving respawn items to players
     default: op
+  kwlk.setrespawn:
+    description: Allows setting item in hand as respawn item
+    default: op
+  kwlk.ghost:
+    description: Automatically assigned to ghosts
+    default: false

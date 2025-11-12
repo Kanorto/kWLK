@@ -36,7 +36,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
         
         // Check permission
         if (!sender.hasPermission("kwlk.use")) {
-            sender.sendMessage(Component.text("You don't have permission to use this command."));
+            sender.sendMessage(Component.text("§cУ вас нет прав для использования этой команды."));
             return true;
         }
         
@@ -46,6 +46,8 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 UUID playerId = player.getUniqueId();
+                
+                plugin.getLogger().info("[KICK] Игрок " + player.getName() + " запустил команду кика");
                 
                 // Store pending confirmation
                 long currentTime = System.currentTimeMillis();
@@ -58,17 +60,18 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
                     if (confirmTime != null && confirmTime == currentTime) {
                         pendingConfirmations.remove(playerId);
                         String expiredMsg = plugin.getConfig().getString("expired-message", 
-                            "<red>Confirmation expired. Please run the command again.</red>");
+                            "<red>Время подтверждения истекло. Пожалуйста, запустите команду снова.</red>");
                         player.sendMessage(miniMessage.deserialize(expiredMsg));
+                        plugin.getLogger().info("[KICK] Время подтверждения истекло для " + player.getName());
                     }
                 }, timeout * 20L);
                 
                 // Send confirmation message
                 String confirmMsg = plugin.getConfig().getString("confirmation-message",
-                    "<yellow>Are you sure you want to kick all players without permission? Type <green>/kwlk confirm</green> to proceed or <red>/kwlk cancel</red> to cancel.</yellow>");
+                    "<yellow>Вы уверены, что хотите кикнуть всех игроков без прав? Напишите <green>/kwlk confirm</green> для подтверждения или <red>/kwlk cancel</red> для отмены.</yellow>");
                 player.sendMessage(miniMessage.deserialize(confirmMsg));
             } else {
-                sender.sendMessage(Component.text("This command can only be used by players."));
+                sender.sendMessage(Component.text("§cЭту команду могут использовать только игроки."));
             }
             return true;
         }
@@ -77,7 +80,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
         
         if (subCommand.equals("confirm")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Component.text("This command can only be used by players."));
+                sender.sendMessage(Component.text("§cЭту команду могут использовать только игроки."));
                 return true;
             }
             
@@ -87,7 +90,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             // Check if there's a pending confirmation
             if (!pendingConfirmations.containsKey(playerId)) {
                 String expiredMsg = plugin.getConfig().getString("expired-message", 
-                    "<red>Confirmation expired. Please run the command again.</red>");
+                    "<red>Время подтверждения истекло. Пожалуйста, запустите команду снова.</red>");
                 player.sendMessage(miniMessage.deserialize(expiredMsg));
                 return true;
             }
@@ -96,25 +99,32 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             pendingConfirmations.remove(playerId);
             
             // Kick all players without permission (async preparation, sync execution)
-            player.sendMessage(Component.text("§eProcessing kick request..."));
+            player.sendMessage(Component.text("§eОбработка запроса на кик..."));
+            plugin.getLogger().info("[KICK] Игрок " + player.getName() + " подтвердил команду кика");
+            
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                 // Prepare list of players to kick (async)
                 Collection<? extends Player> onlinePlayers = plugin.getServer().getOnlinePlayers();
                 List<Player> playersToKick = new ArrayList<>();
                 List<Player> playersToWhitelist = new ArrayList<>();
                 
+                plugin.getLogger().info("[KICK] Проверка прав для " + onlinePlayers.size() + " игроков...");
+                
                 for (Player p : onlinePlayers) {
+                    // IMPORTANT: Check bypass permission before kicking
                     if (!p.hasPermission("kwlk.bypass")) {
                         playersToKick.add(p);
+                        plugin.getLogger().info("[KICK] Игрок " + p.getName() + " будет кикнут (нет права kwlk.bypass)");
                     } else {
                         playersToWhitelist.add(p);
+                        plugin.getLogger().info("[KICK] Игрок " + p.getName() + " защищен (есть право kwlk.bypass)");
                     }
                 }
                 
                 // Execute kicks on main thread
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
                     String kickMessageConfig = plugin.getConfig().getString("kick-message",
-                        "<red><bold>You have been kicked from the server!</bold></red>\n<gray>Reason: Whitelist purge</gray>");
+                        "<red><bold>Вы были кикнуты с сервера!</bold></red>\n<gray>Причина: Чистка вайтлиста</gray>");
                     Component kickMessage = miniMessage.deserialize(kickMessageConfig);
                     
                     // Add to whitelist
@@ -125,11 +135,14 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
                     // Kick players
                     for (Player p : playersToKick) {
                         p.kick(kickMessage);
+                        plugin.getLogger().info("[KICK] Игрок " + p.getName() + " был кикнут");
                     }
+                    
+                    plugin.getLogger().info("[KICK] Завершено. Кикнуто: " + playersToKick.size() + ", В вайтлисте: " + playersToWhitelist.size());
                     
                     // Send success message
                     String successMsg = plugin.getConfig().getString("success-message",
-                        "<green>Successfully kicked <count> player(s) without permission.</green>");
+                        "<green>Успешно кикнуто <count> игрок(ов) без прав.</green>");
                     successMsg = successMsg.replace("<count>", String.valueOf(playersToKick.size()));
                     sender.sendMessage(miniMessage.deserialize(successMsg));
                 });
@@ -138,7 +151,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             return true;
         } else if (subCommand.equals("cancel")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Component.text("This command can only be used by players."));
+                sender.sendMessage(Component.text("§cЭту команду могут использовать только игроки."));
                 return true;
             }
             
@@ -148,9 +161,11 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             // Remove pending confirmation
             pendingConfirmations.remove(playerId);
             
+            plugin.getLogger().info("[KICK] Игрок " + player.getName() + " отменил операцию кика");
+            
             // Send cancel message
             String cancelMsg = plugin.getConfig().getString("cancel-message",
-                "<red>Kick operation cancelled.</red>");
+                "<red>Операция кика отменена.</red>");
             player.sendMessage(miniMessage.deserialize(cancelMsg));
             
             return true;
@@ -166,7 +181,9 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(player.getUniqueId());
         if (!offlinePlayer.isWhitelisted()) {
             offlinePlayer.setWhitelisted(true);
-            plugin.getLogger().info("Added " + player.getName() + " to whitelist (has bypass permission)");
+            plugin.getLogger().info("[WHITELIST] Добавлен игрок " + player.getName() + " (" + player.getUniqueId() + ") в вайтлист (есть право kwlk.bypass)");
+        } else {
+            plugin.getLogger().info("[WHITELIST] Игрок " + player.getName() + " уже в вайтлисте");
         }
     }
     

@@ -2,19 +2,19 @@
 
 # Kick message in MiniMessage format
 # See https://docs.advntr.dev/minimessage/format.html for formatting options
-kick-message: "<red><bold>You have been kicked from the server!</bold></red>\n<gray>Reason: Whitelist purge</gray>"
+kick-message: "<red><bold>Вы были кикнуты с сервера!</bold></red>\n<gray>Причина: Чистка вайтлиста</gray>"
 
 # Confirmation message shown to the command executor
-confirmation-message: "<yellow>Are you sure you want to kick all players without permission? Type <green>/kwlk confirm</green> to proceed or <red>/kwlk cancel</red> to cancel.</yellow>"
+confirmation-message: "<yellow>Вы уверены, что хотите кикнуть всех игроков без прав? Напишите <green>/kwlk confirm</green> для подтверждения или <red>/kwlk cancel</red> для отмены.</yellow>"
 
 # Message shown after successful kick
-success-message: "<green>Successfully kicked <count> player(s) without permission.</green>"
+success-message: "<green>Успешно кикнуто <count> игрок(ов) без прав.</green>"
 
 # Message shown when confirmation is cancelled
-cancel-message: "<red>Kick operation cancelled.</red>"
+cancel-message: "<red>Операция кика отменена.</red>"
 
 # Message shown when confirmation expires
-expired-message: "<red>Confirmation expired. Please run the command again.</red>"
+expired-message: "<red>Время подтверждения истекло. Пожалуйста, запустите команду снова.</red>"
 
 # Time in seconds before confirmation expires
 confirmation-timeout: 30
@@ -25,16 +25,16 @@ ghost-mode:
   enabled: true
   
   # Message shown to player when they become a ghost
-  ghost-message: "<gray><italic>You have died and become a ghost. You cannot interact with the world.</italic></gray>"
+  ghost-message: "<gray><italic>Вы умерли и стали призраком. Вы не можете взаимодействовать с миром.</italic></gray>"
   
   # Message shown to player when they respawn
-  respawn-message: "<green>You have respawned and are no longer a ghost.</green>"
+  respawn-message: "<green>Вы возродились и больше не призрак.</green>"
   
   # Kick ghosts on second death
   kick-on-second-death: true
   
   # Message shown when a ghost is kicked for dying again
-  ghost-kick-message: "<red><bold>You died as a ghost!</bold></red>\n<gray>Ghosts cannot die twice.</gray>"
+  ghost-kick-message: "<red><bold>Вы умерли будучи призраком!</bold></red>\n<gray>Призраки не могут умереть дважды.</gray>"
 
 # Respawn item settings
 respawn-item:
@@ -45,23 +45,23 @@ respawn-item:
   material: "TOTEM_OF_UNDYING"
   
   # Custom display name for the respawn item (MiniMessage format)
-  display-name: "<gold><bold>Totem of Revival</bold></gold>"
+  display-name: "<gold><bold>Тотем Возрождения</bold></gold>"
   
   # Lore for the respawn item (MiniMessage format)
   lore:
-    - "<gray>Right-click to revive a random ghost"
-    - "<gray>within 5 blocks of you."
+    - "<gray>Щелкните правой кнопкой мыши, чтобы воскресить"
+    - "<gray>случайного призрака в радиусе 5 блоков."
     - ""
-    - "<red>Item will break on use!</red>"
+    - "<red>Предмет сломается после использования!</red>"
   
   # Radius in blocks to search for ghosts
   search-radius: 5
   
   # Message shown when using the item successfully
-  success-message: "<green>You have revived <player>!</green>"
+  success-message: "<green>Вы воскресили игрока <player>!</green>"
   
   # Message shown to the revived player
-  revived-message: "<green>You have been revived by <reviver>!</green>"
+  revived-message: "<green>Вас воскресил игрок <reviver>!</green>"
   
   # Message shown when no ghosts are nearby
-  no-ghosts-message: "<red>No ghosts found within <radius> blocks!</red>"
+  no-ghosts-message: "<red>Призраков не найдено в радиусе <radius> блоков!</red>"

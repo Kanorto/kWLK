@@ -2,6 +2,7 @@ package com.kanorto.kwlk;
 
 import com.kanorto.kwlk.commands.GiveRespawnCommand;
 import com.kanorto.kwlk.commands.KWLKCommand;
+import com.kanorto.kwlk.commands.SetRespawnCommand;
 import com.kanorto.kwlk.listeners.PlayerDeathListener;
 import com.kanorto.kwlk.listeners.PlayerInteractionListener;
 import com.kanorto.kwlk.listeners.RespawnItemListener;
@@ -32,6 +33,9 @@ public class KWLKPlugin extends JavaPlugin {
         GiveRespawnCommand giveRespawnCommand = new GiveRespawnCommand(this);
         getCommand("giverespawn").setExecutor(giveRespawnCommand);
         getCommand("giverespawn").setTabCompleter(giveRespawnCommand);
+        
+        SetRespawnCommand setRespawnCommand = new SetRespawnCommand(this);
+        getCommand("setrespawn").setExecutor(setRespawnCommand);
         
         // Register listeners
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this, ghostManager), this);

@@ -60,6 +60,8 @@ public class RespawnItemListener implements Listener {
         // Cancel the event to prevent normal item usage
         event.setCancelled(true);
         
+        plugin.getLogger().info("[RESPAWN] Игрок " + player.getName() + " использует предмет возрождения");
+        
         // Run revival logic asynchronously to find ghosts, then sync for player operations
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             int radius = plugin.getConfig().getInt("respawn-item.search-radius", 5);
@@ -68,15 +70,19 @@ public class RespawnItemListener implements Listener {
             // Switch back to sync thread for player operations
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 if (ghostToRevive != null) {
+                    plugin.getLogger().info("[RESPAWN] Найден призрак " + ghostToRevive.getName() + " для воскрешения");
+                    
                     // Revive the ghost
                     reviveGhost(player, ghostToRevive);
                     
                     // Break the item
                     breakItem(player, item);
                 } else {
+                    plugin.getLogger().info("[RESPAWN] Призраков не найдено в радиусе " + radius + " блоков");
+                    
                     // No ghosts found
                     String message = plugin.getConfig().getString("respawn-item.no-ghosts-message",
-                        "<red>No ghosts found within <radius> blocks!</red>");
+                        "<red>Призраков не найдено в радиусе <radius> блоков!</red>");
                     message = message.replace("<radius>", String.valueOf(radius));
                     player.sendMessage(miniMessage.deserialize(message));
                 }
@@ -150,14 +156,16 @@ public class RespawnItemListener implements Listener {
         // Remove ghost status
         ghostManager.removeGhost(ghost);
         
+        plugin.getLogger().info("[RESPAWN] Игрок " + reviver.getName() + " воскресил призрака " + ghost.getName());
+        
         // Send messages
         String reviverMessage = plugin.getConfig().getString("respawn-item.success-message",
-            "<green>You have revived <player>!</green>");
+            "<green>Вы воскресили игрока <player>!</green>");
         reviverMessage = reviverMessage.replace("<player>", ghost.getName());
         reviver.sendMessage(miniMessage.deserialize(reviverMessage));
         
         String revivedMessage = plugin.getConfig().getString("respawn-item.revived-message",
-            "<green>You have been revived by <reviver>!</green>");
+            "<green>Вас воскресил игрок <reviver>!</green>");
         revivedMessage = revivedMessage.replace("<reviver>", reviver.getName());
         ghost.sendMessage(miniMessage.deserialize(revivedMessage));
     }
@@ -166,6 +174,8 @@ public class RespawnItemListener implements Listener {
      * Break the respawn item
      */
     private void breakItem(Player player, ItemStack item) {
+        plugin.getLogger().info("[RESPAWN] Предмет возрождения сломался у игрока " + player.getName());
+        
         // Reduce item amount by 1
         if (item.getAmount() > 1) {
             item.setAmount(item.getAmount() - 1);
