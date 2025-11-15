@@ -9,6 +9,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.*;
 
 /**
@@ -58,9 +59,12 @@ public class PlayerInteractionListener implements Listener {
     }
     
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerPickupItem(PlayerAttemptPickupItemEvent event) {
-        if (ghostManager.isGhost(event.getPlayer().getUniqueId())) {
-            event.setCancelled(true);
+    public void onPlayerPickupItem(EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (ghostManager.isGhost(player.getUniqueId())) {
+                event.setCancelled(true);
+            }
         }
     }
     
