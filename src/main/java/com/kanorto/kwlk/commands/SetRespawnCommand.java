@@ -1,8 +1,8 @@
 package com.kanorto.kwlk.commands;
 
 import com.kanorto.kwlk.KWLKPlugin;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -33,13 +33,13 @@ public class SetRespawnCommand implements CommandExecutor {
         
         // Check permission
         if (!sender.hasPermission("kwlk.setrespawn")) {
-            sender.sendMessage(Component.text("§cУ вас нет прав для использования этой команды."));
+            sender.sendMessage("§cУ вас нет прав для использования этой команды.");
             return true;
         }
         
         // Only players can use this command
         if (!(sender instanceof Player)) {
-            sender.sendMessage(Component.text("§cЭту команду могут использовать только игроки."));
+            sender.sendMessage("§cЭту команду могут использовать только игроки.");
             return true;
         }
         
@@ -48,13 +48,13 @@ public class SetRespawnCommand implements CommandExecutor {
         
         // Check if player is holding an item
         if (item.getType().isAir()) {
-            sender.sendMessage(Component.text("§cВы должны держать предмет в руке!"));
+            sender.sendMessage("§cВы должны держать предмет в руке!");
             return true;
         }
         
         // Check if respawn item feature is enabled
         if (!plugin.getConfig().getBoolean("respawn-item.enabled", true)) {
-            sender.sendMessage(Component.text("§cФункция предмета возрождения отключена в конфигурации!"));
+            sender.sendMessage("§cФункция предмета возрождения отключена в конфигурации!");
             return true;
         }
         
@@ -67,16 +67,16 @@ public class SetRespawnCommand implements CommandExecutor {
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             // Set display name
-            Component nameComponent = miniMessage.deserialize(displayName);
-            meta.displayName(nameComponent);
+            String formattedName = LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(displayName));
+            meta.setDisplayName(formattedName);
             
             // Set lore
             if (!loreConfig.isEmpty()) {
-                List<Component> lore = new ArrayList<>();
+                List<String> lore = new ArrayList<>();
                 for (String loreLine : loreConfig) {
-                    lore.add(miniMessage.deserialize(loreLine));
+                    lore.add(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(loreLine)));
                 }
-                meta.lore(lore);
+                meta.setLore(lore);
             }
             
             item.setItemMeta(meta);
@@ -86,10 +86,10 @@ public class SetRespawnCommand implements CommandExecutor {
                 item.getType().name() + " как предмет возрождения");
             
             // Send success message
-            sender.sendMessage(Component.text("§aПредмет в вашей руке теперь является предметом возрождения!"));
-            sender.sendMessage(Component.text("§7Используйте его правой кнопкой мыши для воскрешения призраков."));
+            sender.sendMessage("§aПредмет в вашей руке теперь является предметом возрождения!");
+            sender.sendMessage("§7Используйте его правой кнопкой мыши для воскрешения призраков.");
         } else {
-            sender.sendMessage(Component.text("§cНе удалось изменить предмет!"));
+            sender.sendMessage("§cНе удалось изменить предмет!");
             plugin.getLogger().warning("[SETRESPAWN] Не удалось получить ItemMeta для предмета " + item.getType().name());
         }
         

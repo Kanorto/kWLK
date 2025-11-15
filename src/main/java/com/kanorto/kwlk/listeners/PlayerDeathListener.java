@@ -2,8 +2,8 @@ package com.kanorto.kwlk.listeners;
 
 import com.kanorto.kwlk.KWLKPlugin;
 import com.kanorto.kwlk.managers.GhostManager;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,13 +38,13 @@ public class PlayerDeathListener implements Listener {
             if (plugin.getConfig().getBoolean("ghost-mode.kick-on-second-death", true)) {
                 String kickMessage = plugin.getConfig().getString("ghost-mode.ghost-kick-message",
                     "<red><bold>Вы умерли будучи призраком!</bold></red>\n<gray>Призраки не могут умереть дважды.</gray>");
-                Component message = miniMessage.deserialize(kickMessage);
+                String formattedMessage = LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(kickMessage));
                 
                 plugin.getLogger().info("[GHOST] Кикаем призрака " + player.getName() + " за вторую смерть");
                 
                 // Schedule kick on next tick to avoid issues during death event
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    player.kick(message);
+                    player.kickPlayer(formattedMessage);
                 });
             }
         } else {

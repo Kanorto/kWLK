@@ -1,8 +1,8 @@
 package com.kanorto.kwlk.commands;
 
 import com.kanorto.kwlk.KWLKPlugin;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -37,7 +37,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
         
         // Check permission
         if (!sender.hasPermission("kwlk.use")) {
-            sender.sendMessage(Component.text("§cУ вас нет прав для использования этой команды."));
+            sender.sendMessage("§cУ вас нет прав для использования этой команды.");
             return true;
         }
         
@@ -62,7 +62,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
                         pendingConfirmations.remove(playerId);
                         String expiredMsg = plugin.getConfig().getString("expired-message", 
                             "<red>Время подтверждения истекло. Пожалуйста, запустите команду снова.</red>");
-                        player.sendMessage(miniMessage.deserialize(expiredMsg));
+                        player.sendMessage(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(expiredMsg)));
                         plugin.getLogger().info("[KICK] Время подтверждения истекло для " + player.getName());
                     }
                 }, timeout * 20L);
@@ -70,9 +70,9 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
                 // Send confirmation message
                 String confirmMsg = plugin.getConfig().getString("confirmation-message",
                     "<yellow>Вы уверены, что хотите кикнуть всех игроков без прав? Напишите <green>/kwlk confirm</green> для подтверждения или <red>/kwlk cancel</red> для отмены.</yellow>");
-                player.sendMessage(miniMessage.deserialize(confirmMsg));
+                player.sendMessage(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(confirmMsg)));
             } else {
-                sender.sendMessage(Component.text("§cЭту команду могут использовать только игроки."));
+                sender.sendMessage("§cЭту команду могут использовать только игроки.");
             }
             return true;
         }
@@ -81,7 +81,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
         
         if (subCommand.equals("confirm")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Component.text("§cЭту команду могут использовать только игроки."));
+                sender.sendMessage("§cЭту команду могут использовать только игроки.");
                 return true;
             }
             
@@ -92,7 +92,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             if (!pendingConfirmations.containsKey(playerId)) {
                 String expiredMsg = plugin.getConfig().getString("expired-message", 
                     "<red>Время подтверждения истекло. Пожалуйста, запустите команду снова.</red>");
-                player.sendMessage(miniMessage.deserialize(expiredMsg));
+                player.sendMessage(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(expiredMsg)));
                 return true;
             }
             
@@ -100,7 +100,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             pendingConfirmations.remove(playerId);
             
             // Kick all players without permission (sync permission checks, async processing)
-            player.sendMessage(Component.text("§eОбработка запроса на кик..."));
+            player.sendMessage("§eОбработка запроса на кик...");
             plugin.getLogger().info("[KICK] Игрок " + player.getName() + " подтвердил команду кика");
             
             // Do all checks on main thread for thread safety
@@ -124,7 +124,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             // Execute kicks (still on main thread as required by Bukkit API)
             String kickMessageConfig = plugin.getConfig().getString("kick-message",
                 "<red><bold>Вы были кикнуты с сервера!</bold></red>\n<gray>Причина: Чистка вайтлиста</gray>");
-            Component kickMessage = miniMessage.deserialize(kickMessageConfig);
+            String kickMessage = LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(kickMessageConfig));
             
             // Add to whitelist
             for (Player p : playersToWhitelist) {
@@ -133,7 +133,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             
             // Kick players
             for (Player p : playersToKick) {
-                p.kick(kickMessage);
+                p.kickPlayer(kickMessage);
                 plugin.getLogger().info("[KICK] Игрок " + p.getName() + " был кикнут");
             }
             
@@ -143,12 +143,12 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             String successMsg = plugin.getConfig().getString("success-message",
                 "<green>Успешно кикнуто <count> игрок(ов) без прав.</green>");
             successMsg = successMsg.replace("<count>", String.valueOf(playersToKick.size()));
-            sender.sendMessage(miniMessage.deserialize(successMsg));
+            sender.sendMessage(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(successMsg)));
             
             return true;
         } else if (subCommand.equals("cancel")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Component.text("§cЭту команду могут использовать только игроки."));
+                sender.sendMessage("§cЭту команду могут использовать только игроки.");
                 return true;
             }
             
@@ -163,7 +163,7 @@ public class KWLKCommand implements CommandExecutor, TabCompleter {
             // Send cancel message
             String cancelMsg = plugin.getConfig().getString("cancel-message",
                 "<red>Операция кика отменена.</red>");
-            player.sendMessage(miniMessage.deserialize(cancelMsg));
+            player.sendMessage(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(cancelMsg)));
             
             return true;
         }
