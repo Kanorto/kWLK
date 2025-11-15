@@ -2,8 +2,8 @@ package com.kanorto.kwlk.listeners;
 
 import com.kanorto.kwlk.KWLKPlugin;
 import com.kanorto.kwlk.managers.GhostManager;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -90,7 +90,7 @@ public class RespawnItemListener implements Listener {
                     String message = plugin.getConfig().getString("respawn-item.no-ghosts-message",
                         "<red>Призраков не найдено в радиусе <radius> блоков!</red>");
                     message = message.replace("<radius>", String.valueOf(radius));
-                    player.sendMessage(miniMessage.deserialize(message));
+                    player.sendMessage(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(message)));
                 }
             });
         });
@@ -121,9 +121,9 @@ public class RespawnItemListener implements Listener {
         
         String expectedName = plugin.getConfig().getString("respawn-item.display-name",
             "<gold><bold>Totem of Revival</bold></gold>");
-        Component expectedComponent = miniMessage.deserialize(expectedName);
+        String expectedFormattedName = LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(expectedName));
         
-        return meta.displayName().equals(expectedComponent);
+        return meta.getDisplayName().equals(expectedFormattedName);
     }
     
     /**
@@ -168,12 +168,12 @@ public class RespawnItemListener implements Listener {
         String reviverMessage = plugin.getConfig().getString("respawn-item.success-message",
             "<green>Вы воскресили игрока <player>!</green>");
         reviverMessage = reviverMessage.replace("<player>", ghost.getName());
-        reviver.sendMessage(miniMessage.deserialize(reviverMessage));
+        reviver.sendMessage(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(reviverMessage)));
         
         String revivedMessage = plugin.getConfig().getString("respawn-item.revived-message",
             "<green>Вас воскресил игрок <reviver>!</green>");
         revivedMessage = revivedMessage.replace("<reviver>", reviver.getName());
-        ghost.sendMessage(miniMessage.deserialize(revivedMessage));
+        ghost.sendMessage(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(revivedMessage)));
     }
     
     /**

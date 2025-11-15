@@ -1,8 +1,8 @@
 package com.kanorto.kwlk.commands;
 
 import com.kanorto.kwlk.KWLKPlugin;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -38,26 +38,26 @@ public class GiveRespawnCommand implements CommandExecutor, TabCompleter {
         
         // Check permission
         if (!sender.hasPermission("kwlk.giverespawn")) {
-            sender.sendMessage(Component.text("§cУ вас нет прав для использования этой команды."));
+            sender.sendMessage("§cУ вас нет прав для использования этой команды.");
             return true;
         }
         
         // Check if respawn item feature is enabled
         if (!plugin.getConfig().getBoolean("respawn-item.enabled", true)) {
-            sender.sendMessage(Component.text("§cФункция предмета возрождения отключена в конфигурации!"));
+            sender.sendMessage("§cФункция предмета возрождения отключена в конфигурации!");
             return true;
         }
         
         // Check arguments
         if (args.length < 1) {
-            sender.sendMessage(Component.text("§cИспользование: /giverespawn <игрок> [количество]"));
+            sender.sendMessage("§cИспользование: /giverespawn <игрок> [количество]");
             return true;
         }
         
         // Get target player
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage(Component.text("§cИгрок не найден: " + args[0]));
+            sender.sendMessage("§cИгрок не найден: " + args[0]);
             return true;
         }
         
@@ -67,11 +67,11 @@ public class GiveRespawnCommand implements CommandExecutor, TabCompleter {
             try {
                 amount = Integer.parseInt(args[1]);
                 if (amount < 1 || amount > 64) {
-                    sender.sendMessage(Component.text("§cКоличество должно быть от 1 до 64!"));
+                    sender.sendMessage("§cКоличество должно быть от 1 до 64!");
                     return true;
                 }
             } catch (NumberFormatException e) {
-                sender.sendMessage(Component.text("§cНеверное количество: " + args[1]));
+                sender.sendMessage("§cНеверное количество: " + args[1]);
                 return true;
             }
         }
@@ -79,7 +79,7 @@ public class GiveRespawnCommand implements CommandExecutor, TabCompleter {
         // Create respawn item
         ItemStack respawnItem = createRespawnItem(amount);
         if (respawnItem == null) {
-            sender.sendMessage(Component.text("§cНе удалось создать предмет возрождения. Проверьте конфигурацию!"));
+            sender.sendMessage("§cНе удалось создать предмет возрождения. Проверьте конфигурацию!");
             return true;
         }
         
@@ -90,8 +90,8 @@ public class GiveRespawnCommand implements CommandExecutor, TabCompleter {
         plugin.getLogger().info("[GIVERESPAWN] " + sender.getName() + " выдал " + amount + " предметов возрождения игроку " + target.getName());
         
         // Send messages
-        sender.sendMessage(Component.text("§aВыдано " + amount + " предмет(ов) возрождения игроку " + target.getName()));
-        target.sendMessage(Component.text("§aВы получили " + amount + " предмет(ов) возрождения!"));
+        sender.sendMessage("§aВыдано " + amount + " предмет(ов) возрождения игроку " + target.getName());
+        target.sendMessage("§aВы получили " + amount + " предмет(ов) возрождения!");
         
         return true;
     }
@@ -117,17 +117,17 @@ public class GiveRespawnCommand implements CommandExecutor, TabCompleter {
             // Set display name
             String displayName = plugin.getConfig().getString("respawn-item.display-name",
                 "<gold><bold>Totem of Revival</bold></gold>");
-            Component nameComponent = miniMessage.deserialize(displayName);
-            meta.displayName(nameComponent);
+            String formattedName = LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(displayName));
+            meta.setDisplayName(formattedName);
             
             // Set lore
             List<String> loreConfig = plugin.getConfig().getStringList("respawn-item.lore");
             if (!loreConfig.isEmpty()) {
-                List<Component> lore = new ArrayList<>();
+                List<String> lore = new ArrayList<>();
                 for (String loreLine : loreConfig) {
-                    lore.add(miniMessage.deserialize(loreLine));
+                    lore.add(LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(loreLine)));
                 }
-                meta.lore(lore);
+                meta.setLore(lore);
             }
             
             item.setItemMeta(meta);

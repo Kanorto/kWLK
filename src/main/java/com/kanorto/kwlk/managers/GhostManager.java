@@ -1,8 +1,8 @@
 package com.kanorto.kwlk.managers;
 
 import com.kanorto.kwlk.KWLKPlugin;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
@@ -65,8 +65,8 @@ public class GhostManager {
             // Send ghost message
             String ghostMessage = plugin.getConfig().getString("ghost-mode.ghost-message", 
                 "<gray><italic>Вы умерли и стали призраком. Вы не можете взаимодействовать с миром.</italic></gray>");
-            Component message = miniMessage.deserialize(ghostMessage);
-            player.sendMessage(message);
+            String formattedMessage = LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(ghostMessage));
+            player.sendMessage(formattedMessage);
             
             // Log to console
             plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " (" + playerId + ") стал призраком");
@@ -116,8 +116,8 @@ public class GhostManager {
             // Send respawn message
             String respawnMessage = plugin.getConfig().getString("ghost-mode.respawn-message", 
                 "<green>Вы возродились и больше не призрак.</green>");
-            Component message = miniMessage.deserialize(respawnMessage);
-            player.sendMessage(message);
+            String formattedMessage = LegacyComponentSerializer.legacySection().serialize(miniMessage.deserialize(respawnMessage));
+            player.sendMessage(formattedMessage);
             
             // Log to console
             plugin.getLogger().info("[GHOST] Игрок " + player.getName() + " (" + playerId + ") больше не призрак");

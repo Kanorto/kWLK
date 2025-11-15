@@ -17,6 +17,7 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.3-R0.1-SNAPSHOT")
     implementation("net.kyori:adventure-api:4.13.1")
     implementation("net.kyori:adventure-text-minimessage:4.13.1")
+    implementation("net.kyori:adventure-text-serializer-legacy:4.13.1")
 }
 
 java {
