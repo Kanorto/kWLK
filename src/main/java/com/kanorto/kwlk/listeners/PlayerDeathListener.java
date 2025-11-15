@@ -28,7 +28,7 @@ public class PlayerDeathListener implements Listener {
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
         
         // Check if player is already a ghost (second death)
         if (ghostManager.isGhost(player.getUniqueId())) {
